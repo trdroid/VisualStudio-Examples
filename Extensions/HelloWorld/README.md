@@ -410,7 +410,11 @@ Right click on the project and select Add -> User Control
 
 ### Contents Added
 
+![](_misc/New%20Contents%20Added.PNG)
+
 *HelloWorld\HelloWorld\Resources\HelloWorldCommand.png*
+
+![](HelloWorld/Resources/HelloWorldCommand.png)
 
 *HelloWorld\HelloWorld\Resources\HelloWorldCommandPackage.ico*
 

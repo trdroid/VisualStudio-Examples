@@ -396,7 +396,7 @@ EndGlobal
 
 ### Adding a User Control
 
-Right click on the project and select Add -> User Control
+Right click on the solution and select Add -> User Control
 
 ![](_misc/Adding%20a%20User%20Control.PNG)
 

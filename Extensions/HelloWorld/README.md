@@ -885,9 +885,60 @@ namespace HelloWorld
 </root>
 ```
 
+### Run the code
 
+Running the extension code starts an Experimental Instance of the Visual Studio.
 
+![](_misc/Experimental%20Instance%20Snapshot.PNG)
 
+The text in the menu and the dialog are from the following files
+
+*HelloWorld\HelloWorld\HelloWorldCommandPackage.vsct*
+
+```xml
+    <Buttons>
+      <!--To define a menu group you have to specify its ID, the parent menu and its display priority.
+          The command is visible and enabled by default. If you need to change the visibility, status, etc, you can use
+          the CommandFlag node.
+          You can add more than one CommandFlag node e.g.:
+              <CommandFlag>DefaultInvisible</CommandFlag>
+              <CommandFlag>DynamicVisibility</CommandFlag>
+          If you do not want an image next to your command, remove the Icon node /> -->
+      <Button guid="guidHelloWorldCommandPackageCmdSet" id="HelloWorldCommandId" priority="0x0100" type="Button">
+        <Parent guid="guidHelloWorldCommandPackageCmdSet" id="MyMenuGroup" />
+        <Icon guid="guidImages" id="bmpPic1" />
+        <Strings>
+          <ButtonText>Invoke HelloWorldCommand</ButtonText>     -----
+        </Strings>
+      </Button>
+    </Buttons>
+```
+
+*HelloWorld\HelloWorld\HelloWorldCommand.cs*
+
+```cs
+        /// <summary>
+        /// This function is the callback used to execute the command when the menu item is clicked.
+        /// See the constructor to see how the menu item is associated with this function using
+        /// OleMenuCommandService service and MenuCommand class.
+        /// </summary>
+        /// <param name="sender">Event sender.</param>
+        /// <param name="e">Event args.</param>
+        private void MenuItemCallback(object sender, EventArgs e)
+        {
+            ---> string message = string.Format(CultureInfo.CurrentCulture, "Inside {0}.MenuItemCallback()", this.GetType().FullName);  
+            string title = "HelloWorldCommand";
+
+            // Show a message box to prove we were here
+            VsShellUtilities.ShowMessageBox(
+                this.ServiceProvider,
+                message,
+                title,
+                OLEMSGICON.OLEMSGICON_INFO,
+                OLEMSGBUTTON.OLEMSGBUTTON_OK,
+                OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST);
+        }
+```
 
 
 

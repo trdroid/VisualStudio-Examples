@@ -891,6 +891,8 @@ Running the extension code starts an Experimental Instance of the Visual Studio.
 
 ![](_misc/Experimental%20Instance%20Snapshot.PNG)
 
+![](_misc/Dialog%20Displayed.PNG)
+
 The text in the menu and the dialog are from the following files
 
 *HelloWorld\HelloWorld\HelloWorldCommandPackage.vsct*

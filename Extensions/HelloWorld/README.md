@@ -408,6 +408,480 @@ Right click on the project and select Add -> User Control
 
 ![](_misc/After%20adding%20a%20new%20command.PNG)
 
+### Contents Added
+
+*HelloWorld\HelloWorld\Resources\HelloWorldCommand.png*
+
+*HelloWorld\HelloWorld\Resources\HelloWorldCommandPackage.ico*
+
+*HelloWorld\HelloWorld\HelloWorldCommand.cs*
+
+```cs
+﻿//------------------------------------------------------------------------------
+// <copyright file="HelloWorldCommand.cs" company="Company">
+//     Copyright (c) Company.  All rights reserved.
+// </copyright>
+//------------------------------------------------------------------------------
+
+using System;
+using System.ComponentModel.Design;
+using System.Globalization;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
+
+namespace HelloWorld
+{
+    /// <summary>
+    /// Command handler
+    /// </summary>
+    internal sealed class HelloWorldCommand
+    {
+        /// <summary>
+        /// Command ID.
+        /// </summary>
+        public const int CommandId = 0x0100;
+
+        /// <summary>
+        /// Command menu group (command set GUID).
+        /// </summary>
+        public static readonly Guid CommandSet = new Guid("58ba7c22-5d1d-4602-a33b-09fad84141d8");
+
+        /// <summary>
+        /// VS Package that provides this command, not null.
+        /// </summary>
+        private readonly Package package;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HelloWorldCommand"/> class.
+        /// Adds our command handlers for menu (commands must exist in the command table file)
+        /// </summary>
+        /// <param name="package">Owner package, not null.</param>
+        private HelloWorldCommand(Package package)
+        {
+            if (package == null)
+            {
+                throw new ArgumentNullException("package");
+            }
+
+            this.package = package;
+
+            OleMenuCommandService commandService = this.ServiceProvider.GetService(typeof(IMenuCommandService)) as OleMenuCommandService;
+            if (commandService != null)
+            {
+                var menuCommandID = new CommandID(CommandSet, CommandId);
+                var menuItem = new MenuCommand(this.MenuItemCallback, menuCommandID);
+                commandService.AddCommand(menuItem);
+            }
+        }
+
+        /// <summary>
+        /// Gets the instance of the command.
+        /// </summary>
+        public static HelloWorldCommand Instance
+        {
+            get;
+            private set;
+        }
+
+        /// <summary>
+        /// Gets the service provider from the owner package.
+        /// </summary>
+        private IServiceProvider ServiceProvider
+        {
+            get
+            {
+                return this.package;
+            }
+        }
+
+        /// <summary>
+        /// Initializes the singleton instance of the command.
+        /// </summary>
+        /// <param name="package">Owner package, not null.</param>
+        public static void Initialize(Package package)
+        {
+            Instance = new HelloWorldCommand(package);
+        }
+
+        /// <summary>
+        /// This function is the callback used to execute the command when the menu item is clicked.
+        /// See the constructor to see how the menu item is associated with this function using
+        /// OleMenuCommandService service and MenuCommand class.
+        /// </summary>
+        /// <param name="sender">Event sender.</param>
+        /// <param name="e">Event args.</param>
+        private void MenuItemCallback(object sender, EventArgs e)
+        {
+            string message = string.Format(CultureInfo.CurrentCulture, "Inside {0}.MenuItemCallback()", this.GetType().FullName);
+            string title = "HelloWorldCommand";
+
+            // Show a message box to prove we were here
+            VsShellUtilities.ShowMessageBox(
+                this.ServiceProvider,
+                message,
+                title,
+                OLEMSGICON.OLEMSGICON_INFO,
+                OLEMSGBUTTON.OLEMSGBUTTON_OK,
+                OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST);
+        }
+    }
+}
+```
+
+*HelloWorld\HelloWorld\HelloWorldCommandPackage.cs*
+
+```cs
+﻿//------------------------------------------------------------------------------
+// <copyright file="HelloWorldCommandPackage.cs" company="Company">
+//     Copyright (c) Company.  All rights reserved.
+// </copyright>
+//------------------------------------------------------------------------------
+
+using System;
+using System.ComponentModel.Design;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.Runtime.InteropServices;
+using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.OLE.Interop;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.Win32;
+
+namespace HelloWorld
+{
+    /// <summary>
+    /// This is the class that implements the package exposed by this assembly.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The minimum requirement for a class to be considered a valid package for Visual Studio
+    /// is to implement the IVsPackage interface and register itself with the shell.
+    /// This package uses the helper classes defined inside the Managed Package Framework (MPF)
+    /// to do it: it derives from the Package class that provides the implementation of the
+    /// IVsPackage interface and uses the registration attributes defined in the framework to
+    /// register itself and its components with the shell. These attributes tell the pkgdef creation
+    /// utility what data to put into .pkgdef file.
+    /// </para>
+    /// <para>
+    /// To get loaded into VS, the package must be referred by &lt;Asset Type="Microsoft.VisualStudio.VsPackage" ...&gt; in .vsixmanifest file.
+    /// </para>
+    /// </remarks>
+    [PackageRegistration(UseManagedResourcesOnly = true)]
+    [InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)] // Info on this package for Help/About
+    [ProvideMenuResource("Menus.ctmenu", 1)]
+    [Guid(HelloWorldCommandPackage.PackageGuidString)]
+    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "pkgdef, VS and vsixmanifest are valid VS terms")]
+    public sealed class HelloWorldCommandPackage : Package
+    {
+        /// <summary>
+        /// HelloWorldCommandPackage GUID string.
+        /// </summary>
+        public const string PackageGuidString = "654c1c5e-2ff5-482b-9a82-f7faf891286f";
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HelloWorldCommand"/> class.
+        /// </summary>
+        public HelloWorldCommandPackage()
+        {
+            // Inside this method you can place any initialization code that does not require
+            // any Visual Studio service because at this point the package object is created but
+            // not sited yet inside Visual Studio environment. The place to do all the other
+            // initialization is the Initialize method.
+        }
+
+        #region Package Members
+
+        /// <summary>
+        /// Initialization of the package; this method is called right after the package is sited, so this is the place
+        /// where you can put all the initialization code that rely on services provided by VisualStudio.
+        /// </summary>
+        protected override void Initialize()
+        {
+            HelloWorldCommand.Initialize(this);
+            base.Initialize();
+        }
+
+        #endregion
+    }
+}
+```
+
+*HelloWorld\HelloWorld\HelloWorldCommandPackage.vsct*
+
+```xml
+﻿<?xml version="1.0" encoding="utf-8"?>
+<CommandTable xmlns="http://schemas.microsoft.com/VisualStudio/2005-10-18/CommandTable" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <!--  This is the file that defines the actual layout and type of the commands.
+        It is divided in different sections (e.g. command definition, command
+        placement, ...), with each defining a specific set of properties.
+        See the comment before each section for more details about how to
+        use it. -->
+
+  <!--  The VSCT compiler (the tool that translates this file into the binary
+        format that VisualStudio will consume) has the ability to run a preprocessor
+        on the vsct file; this preprocessor is (usually) the C++ preprocessor, so
+        it is possible to define includes and macros with the same syntax used
+        in C++ files. Using this ability of the compiler here, we include some files
+        defining some of the constants that we will use inside the file. -->
+
+  <!--This is the file that defines the IDs for all the commands exposed by VisualStudio. -->
+  <Extern href="stdidcmd.h"/>
+
+  <!--This header contains the command ids for the menus provided by the shell. -->
+  <Extern href="vsshlids.h"/>
+
+  <!--The Commands section is where commands, menus, and menu groups are defined.
+      This section uses a Guid to identify the package that provides the command defined inside it. -->
+  <Commands package="guidHelloWorldCommandPackage">
+    <!-- Inside this section we have different sub-sections: one for the menus, another
+    for the menu groups, one for the buttons (the actual commands), one for the combos
+    and the last one for the bitmaps used. Each element is identified by a command id that
+    is a unique pair of guid and numeric identifier; the guid part of the identifier is usually
+    called "command set" and is used to group different command inside a logically related
+    group; your package should define its own command set in order to avoid collisions
+    with command ids defined by other packages. -->
+
+    <!-- In this section you can define new menu groups. A menu group is a container for
+         other menus or buttons (commands); from a visual point of view you can see the
+         group as the part of a menu contained between two lines. The parent of a group
+         must be a menu. -->
+    <Groups>
+      <Group guid="guidHelloWorldCommandPackageCmdSet" id="MyMenuGroup" priority="0x0600">
+        <Parent guid="guidSHLMainMenu" id="IDM_VS_MENU_TOOLS"/>
+      </Group>
+    </Groups>
+
+    <!--Buttons section. -->
+    <!--This section defines the elements the user can interact with, like a menu command or a button
+        or combo box in a toolbar. -->
+    <Buttons>
+      <!--To define a menu group you have to specify its ID, the parent menu and its display priority.
+          The command is visible and enabled by default. If you need to change the visibility, status, etc, you can use
+          the CommandFlag node.
+          You can add more than one CommandFlag node e.g.:
+              <CommandFlag>DefaultInvisible</CommandFlag>
+              <CommandFlag>DynamicVisibility</CommandFlag>
+          If you do not want an image next to your command, remove the Icon node /> -->
+      <Button guid="guidHelloWorldCommandPackageCmdSet" id="HelloWorldCommandId" priority="0x0100" type="Button">
+        <Parent guid="guidHelloWorldCommandPackageCmdSet" id="MyMenuGroup" />
+        <Icon guid="guidImages" id="bmpPic1" />
+        <Strings>
+          <ButtonText>Invoke HelloWorldCommand</ButtonText>
+        </Strings>
+      </Button>
+    </Buttons>
+
+    <!--The bitmaps section is used to define the bitmaps that are used for the commands.-->
+    <Bitmaps>
+      <!--  The bitmap id is defined in a way that is a little bit different from the others:
+            the declaration starts with a guid for the bitmap strip, then there is the resource id of the
+            bitmap strip containing the bitmaps and then there are the numeric ids of the elements used
+            inside a button definition. An important aspect of this declaration is that the element id
+            must be the actual index (1-based) of the bitmap inside the bitmap strip. -->
+      <Bitmap guid="guidImages" href="Resources\HelloWorldCommand.png" usedList="bmpPic1, bmpPic2, bmpPicSearch, bmpPicX, bmpPicArrows, bmpPicStrikethrough"/>
+    </Bitmaps>
+  </Commands>
+
+  <Symbols>
+    <!-- This is the package guid. -->
+    <GuidSymbol name="guidHelloWorldCommandPackage" value="{654c1c5e-2ff5-482b-9a82-f7faf891286f}" />
+
+    <!-- This is the guid used to group the menu commands together -->
+    <GuidSymbol name="guidHelloWorldCommandPackageCmdSet" value="{58ba7c22-5d1d-4602-a33b-09fad84141d8}">
+      <IDSymbol name="MyMenuGroup" value="0x1020" />
+      <IDSymbol name="HelloWorldCommandId" value="0x0100" />
+    </GuidSymbol>
+
+    <GuidSymbol name="guidImages" value="{08435f6c-1f8e-41a7-8328-401134a01e5b}" >
+      <IDSymbol name="bmpPic1" value="1" />
+      <IDSymbol name="bmpPic2" value="2" />
+      <IDSymbol name="bmpPicSearch" value="3" />
+      <IDSymbol name="bmpPicX" value="4" />
+      <IDSymbol name="bmpPicArrows" value="5" />
+      <IDSymbol name="bmpPicStrikethrough" value="6" />
+    </GuidSymbol>
+  </Symbols>
+</CommandTable>
+```
+
+*HelloWorld\HelloWorld\Key.snk*
+
+*HelloWorld\HelloWorld\packages.config*
+
+```xml
+﻿<?xml version="1.0" encoding="utf-8"?>
+<packages>
+  <package id="Microsoft.VisualStudio.CoreUtility" version="15.0.26201" targetFramework="net46" />
+  <package id="Microsoft.VisualStudio.Imaging" version="15.0.26201" targetFramework="net46" />
+  <package id="Microsoft.VisualStudio.OLE.Interop" version="7.10.6070" targetFramework="net46" />
+  <package id="Microsoft.VisualStudio.Shell.15.0" version="15.0.26201" targetFramework="net46" />
+  <package id="Microsoft.VisualStudio.Shell.Framework" version="15.0.26201" targetFramework="net46" />
+  <package id="Microsoft.VisualStudio.Shell.Interop" version="7.10.6071" targetFramework="net46" />
+  <package id="Microsoft.VisualStudio.Shell.Interop.10.0" version="10.0.30319" targetFramework="net46" />
+  <package id="Microsoft.VisualStudio.Shell.Interop.11.0" version="11.0.61030" targetFramework="net46" />
+  <package id="Microsoft.VisualStudio.Shell.Interop.12.0" version="12.0.30110" targetFramework="net46" />
+  <package id="Microsoft.VisualStudio.Shell.Interop.8.0" version="8.0.50727" targetFramework="net46" />
+  <package id="Microsoft.VisualStudio.Shell.Interop.9.0" version="9.0.30729" targetFramework="net46" />
+  <package id="Microsoft.VisualStudio.TextManager.Interop" version="7.10.6070" targetFramework="net46" />
+  <package id="Microsoft.VisualStudio.TextManager.Interop.8.0" version="8.0.50727" targetFramework="net46" />
+  <package id="Microsoft.VisualStudio.Threading" version="15.0.240" targetFramework="net46" />
+  <package id="Microsoft.VisualStudio.Utilities" version="15.0.26201" targetFramework="net46" />
+  <package id="Microsoft.VisualStudio.Validation" version="15.0.82" targetFramework="net46" />
+  <package id="Microsoft.VSSDK.BuildTools" version="15.0.26201" targetFramework="net46" developmentDependency="true" />
+</packages>
+```
+
+*HelloWorld\HelloWorld\VSPackage.resx*
+
+```xml
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+    VS SDK Notes: This resx file contains the resources that will be consumed from your package by Visual Studio.
+    For example, Visual Studio will attempt to load resource '400' from this resource stream when it needs to
+    load your package's icon. Because Visual Studio will always look in the VSPackage.resources stream first for
+    resources it needs, you should put additional resources that Visual Studio will load directly into this resx
+    file.
+
+    Resources that you would like to access directly from your package in a strong-typed fashion should be stored
+    in Resources.resx or another resx file.
+-->
+<root>
+  <!--
+    Microsoft ResX Schema
+
+    Version 2.0
+
+    The primary goals of this format is to allow a simple XML format
+    that is mostly human readable. The generation and parsing of the
+    various data types are done through the TypeConverter classes
+    associated with the data types.
+
+    Example:
+
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+
+    There are any number of "resheader" rows that contain simple
+    name/value pairs.
+
+    Each data row contains a name, and value. The row also contains a
+    type or mimetype. Type corresponds to a .NET class that support
+    text/value conversion through the TypeConverter architecture.
+    Classes that don't support this are serialized and stored with the
+    mimetype set.
+
+    The mimetype is used for serialized objects, and tells the
+    ResXResourceReader how to depersist the object. This is currently not
+    extensible. For a given mimetype the value must be set accordingly:
+
+    Note - application/x-microsoft.net.object.binary.base64 is the format
+    that the ResXResourceWriter will generate, however the reader can
+    read any of the formats listed below.
+
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="110" xml:space="preserve">
+    <value>HelloWorldCommand Extension</value>
+  </data>
+  <data name="112" xml:space="preserve">
+    <value>HelloWorldCommand Visual Studio Extension Detailed Info</value>
+  </data>
+  <data name="400" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\HelloWorldCommandPackage.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+</root>
+```
+
+
+
+
 
 
 

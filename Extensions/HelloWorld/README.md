@@ -229,6 +229,10 @@ using System.Runtime.InteropServices;
 </PackageManifest>
 ```
 
+On selecting the manifest file ...
+
+![](_misc/Selecting%20manifest%20file.PNG)
+
 *HelloWorld/HelloWorld/stylesheet.css*
 
 ```css
@@ -389,3 +393,23 @@ Global
 	EndGlobalSection
 EndGlobal
 ```
+
+### Adding a User Control
+
+Right click on the project and select Add -> User Control
+
+![](_misc/Adding%20a%20User%20Control.PNG)
+
+### Selecting a Command
+
+![](_misc/Adding%20a%20new%20Command.PNG)
+
+### Files created on selecting a Command
+
+![](_misc/After%20adding%20a%20new%20command.PNG)
+
+
+
+
+
+

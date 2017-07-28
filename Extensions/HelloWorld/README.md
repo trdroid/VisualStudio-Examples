@@ -418,6 +418,8 @@ Right click on the project and select Add -> User Control
 
 *HelloWorld\HelloWorld\Resources\HelloWorldCommandPackage.ico*
 
+![](_misc/_misc/HelloWorldCommandPackage%20icon%20image.PNG)
+
 *HelloWorld\HelloWorld\HelloWorldCommand.cs*
 
 ```cs
